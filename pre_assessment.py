@@ -12,23 +12,16 @@ temp1 = listmeta.find({'id_pemda' : 1}).__getitem__(2) #TODO: untuk percobaan in
 
 class assessment():
     def __init__(self, dict={}):
-        self.__dict__ = dict
+        self.newdict = dict
 
     def process_dict(self, var):
         new_dict = {}
-        for k,v in self.__dict__.items():
+        for k,v in self.newdict.items():
             if k == var:
                 new_dict[k] = v
                 return new_dict
 
     def as_access(self): #TODO : Perlu rata rata
-        regex = re.compile(
-                r'^(?:http|ftp)s?://'  # http:// or https://
-                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-                r'localhost|'  # localhost...
-                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-                r'(?::\d+)?'  # optional port
-                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         resources = self.process_dict('resources')
         tempNilaiMeta = 0
         countUrl = 0
@@ -38,9 +31,9 @@ class assessment():
                 for k,v in j.items():
                     if k == 'url':
                         countUrl += 1
-                        if re.match(regex,v) is not None:
-                            tempNilaiMeta += 1
-            nilaiMetaPemda = tempNilaiMeta/countUrl
+                        if v is not None:
+                            tempNilaiMeta +=1
+        nilaiMetaPemda = tempNilaiMeta/countUrl
         return nilaiMetaPemda
 #---------------------------------------------------------------------------------#
     def as_discovery(self):  #TODO: perlu rata-rata setiap nilai tags, title, notes
@@ -75,11 +68,11 @@ class assessment():
 #---------------------------------------------------------------------------------#
     def as_right(self):
         countval = 0        #TODO: rata2 setiap nilai
-        rigth = temp1
+        rigth = self.newdict
         for k,v in rigth.items():
-            if k == 'license_title' and len(v) > 0:
+            if k == 'license_id' and v is not None:
                 countval += 1
-        print(countval)
+        return countval
 # ---------------------------------------------------------------------------------#
     def as_preserv(self):
         try:    #TODO: Curr period still error
@@ -104,6 +97,80 @@ class assessment():
         return countsize, counttype, countfor
 
 # ---------------------------------------------------------------------------------#
+    def as_date(self): #TODO: create dct dataset
+        countIssued = 0 #issued = created
+        countModified = 0 #modified = last modified
+        var_dis = self.process_dict('resources')
+        for i in var_dis.values():
+            for j in i:
+                for k,v in j.items():
+                    if k == 'created' and v is not None:
+                        countIssued +=1
+                    elif k == 'last_modified' and v is not None:
+                        countModified +=1
+        return countModified, countIssued
+# ---------------------------------------------------------------------------------#
+#Access Url = as_access() tidak perlu membuat lagi **periksa kevalidan TODO: ubah kodingan awal
+    def as_access_validate(self): #TODO : Perlu rata rata
+        regex = re.compile(
+                r'^(?:http|ftp)s?://'  # http:// or https://
+                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+                r'localhost|'  # localhost...
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+                r'(?::\d+)?'  # optional port
+                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        resources = self.process_dict('resources')
+        tempNilaiMeta = 0
+        countUrl = 0
+        nilaiMetaPemda = 0
+        for i in resources.values():
+            for j in i:
+                for k,v in j.items():
+                    if k == 'url':
+                        countUrl += 1
+                        if re.match(regex,v) is not None:
+                            tempNilaiMeta += 1
+            nilaiMetaPemda = tempNilaiMeta/countUrl
+        return nilaiMetaPemda
+# ---------------------------------------------------------------------------------#
+#Contact Url = as_contact tidak perlu buat lagi **periksa kevalidan
+# ---------------------------------------------------------------------------------#
+#TODO: Date format = 'YYYY - MM - DD'
+    def as_date_validation(self):
+        countdate = 0
+        countmod = 0
+        import dateutil.parser
+        var_date = self.process_dict('resources')
+        for i in var_date.values():
+            for j in i:
+                for k,v in j.items():
+                    if k == 'created' and v is not None:
+                        d = dateutil.parser.parse(v)
+                        if d.strftime('%Y-%m-%d'):
+                            print('true')
+                            countdate += 1
+                    if k == 'last_modified' and v is not None:
+                        d = dateutil.parser.parse(v)
+                        if d.strftime('%Y-%m-%d'):
+                            countmod += 1
+        return countdate, countmod
+
+# ---------------------------------------------------------------------------------#
+    #License Check
+    def as_license_validate(self):   #TODO : Hitung rata - rata
+        listacceptedformat = [
+            'cc-zero', 'odc-pddl', 'cc-by', 'odc-by', 'cc-by-sa', 'odc-odbl',
+            'against-drm', 'by-2-0', 'zero-2-0', 'dsl', 'eff-open-audio-license',
+            'fal', 'gfdl', 'miros'
+        ]
+        countlicense = 0
+        license = self.newdict
+        for k,v in license.items():
+            for i in listacceptedformat:
+                if k == 'license_id':
+                    if v == i:
+                        countlicense +=1
+        return countlicense
 
 
 
@@ -118,7 +185,7 @@ class assessment():
 # print(disc)
 
 tes = assessment(temp1) #TODO: Tes def
-tem = tes.as_preserv()
+tem = tes.as_license_validate()
 print(tem)
 
 # tesa = {'id' : 'tes', 'tes' : ''}

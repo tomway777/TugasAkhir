@@ -25,7 +25,7 @@ meta = rem.action.package_show(id='acara-wisata-balai-kota')
 # print(meta)
 
 # serializer = RDFSerializer()
-percobaan = serializer.serialize_dataset(meta, _format='xml')
+# percobaan = serializer.serialize_dataset(meta, _format='xml')
 # post = db['meta']
 # posts = {'id_pemda' : 2,
 #          'nama' : 'Gamal'}
