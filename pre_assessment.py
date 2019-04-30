@@ -1,11 +1,11 @@
-from db_connection import mongo_connection
+# from db_connection import mongo_connection
 import re
-init = mongo_connection('localhost',27017)
-db = init.connect('TugasAkhir')
+# init = mongo_connection('localhost',27017)
+# db = init.connect('TugasAkhir')
 
-listmeta = db['pemdaMetaNew']
-temp = listmeta.find({'id_pemda' : 1})
-temp1 = listmeta.find({'id_pemda' : 1}).__getitem__(0) #TODO: untuk percobaan individual
+# listmeta = db['pemdaMetaNew']
+# temp = listmeta.find({'id_pemda' : 1})
+# temp1 = listmeta.find({'id_pemda' : 1}).__getitem__(0) #TODO: untuk percobaan individual
 # print(temp)
 # for i in temp:
 #     print(i)
@@ -45,7 +45,7 @@ class assessment():
         tempNotes =0
         tempTags = 0
         countTags =0
-        var_tags = self.process_dict('tags')
+
         for k,v in self.newdict.items():
             if k == 'title' and v is not None:
                 tempTitle += 1
@@ -54,16 +54,20 @@ class assessment():
             else:
                 tempNotes += 0
                 tempTitle += 0
-
-        for j in var_tags.values():
-            for i in j:
-                countTags += 1
-                for n,m in i.items():
-                    if n == 'name' and m is not None:
-                        tempTags += 1
-                    else:
-                        tempTags += 0
-        avgTags = tempTags/countTags
+        try:
+            var_tags = self.process_dict('tags')
+            for j in var_tags.values():
+                for i in j:
+                    countTags += 1
+                    for n,m in i.items():
+                        if n == 'name' and m is not None:
+                            tempTags += 1
+                        else:
+                            tempTags += 0
+            avgTags = tempTags / countTags
+        except:
+            avgTags = 0
+            #TODO : JANGAN KALAU VALUE = NULL MASUKAN KE TRY
         total_val = (avgTags + tempNotes + tempTitle)/3
         return total_val
 #---------------------------------------------------------------------------------#
@@ -114,7 +118,8 @@ class assessment():
                         else:
                             countAcc += 0
         except:
-            print('None')
+            countAcc = 0
+        
         countfor = 0
         counttype = 0
         countsize = 0

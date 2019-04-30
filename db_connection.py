@@ -16,18 +16,16 @@ class mongo_connection:
         return db
 
 class mysql_connection:
-    def __init__(self,host,username,password,dbname):
-        self.host = host
+    def __init__(self,username,password):
         self.username = username
         self.password = password
-        self.dbname = dbname
-    def connect(self, host, username, password):
-        try:
-            conn = msql.connect(
-                host = host,
-                username = username,
-                password = password
+
+    def connect(self, dbname):
+        connect = msql.connect(
+                host = 'localhost',
+                user = self.username,
+                passwd = self.password,
+                database = dbname
             )
-        except:
-            print("Error Connection")
-        return conn
+        return connect
+

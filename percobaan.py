@@ -16,13 +16,21 @@ init = mongo_connection('localhost',27017)
 db = init.connect('TugasAkhir')
 
 listmeta = db['pemdaMetaNew']
-# temp = listmeta.find({'id_pemda' : 1})
-temp1 = listmeta.find({'id_pemda' : 2}).__getitem__(0) #TODO: untuk percobaan individual
+temp = listmeta.find({'id_pemda' : 1})
+temp1 = listmeta.find({'id_pemda' : 1}).__getitem__(2) #TODO: untuk percobaan individual
+
+
+# count = 0
+# for i in temp:
+#     count += ps.assessment(i).as_discovery()
+#
+# print(count)
+
 
 
 
 tes = ps.assessment(temp1) #TODO: Tes def
-tem = tes.as_openformat_validate()
+tem = tes.as_discovery()
 print(tem)
 # list = [
 # 'cc-by-4.0',
