@@ -1,6 +1,5 @@
 from pymongo.mongo_client import MongoClient
 import mysql.connector as msql
-
 class mongo_connection:
     def __init__(self, host, port):
         self.host = host

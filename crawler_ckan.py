@@ -2,7 +2,8 @@ import pymongo as mongo
 from ckanapi import RemoteCKAN
 import datetime
 from tqdm import tqdm
-
+import urllib.request as req
+import json as jsn
 
 
 now = datetime.datetime.now()
@@ -31,25 +32,18 @@ def getPackage(aList,id):
     except:
         print('\n ada kesalahan')
 
-#write to DB
+# TODO : Untuk setiap percobaan ubah collection agar tidak ada ganguan data utama -> write
 def writeDB(data,id):
-    post = db['packagelist']
+    post = db['packagelist1']
     posts = {"id_pemda" : id,
              "crawl_at" :  now,
              "package" : data}
     post.insert(posts)
 
-# for k,v in listPemda.items():
-#     getPackage(v)
-# print(type(getPackage(listPemda[3])))
-
-# print(now.year)
-# getPackage(listPemda[3],3)
-
 #gabungkan link dan package
 def mergePackage():
     temp = {}
-    pl = db['packagelist']
+    pl = db['packagelist1']
     for i in pl.find():
         temp [i['id_pemda']] = i['package']
     link_pack = {}
@@ -68,33 +62,62 @@ def getMetadata(key, value, id):
     except:
         print('\n Terjadi kesalahan')
 
+def getMetadataOldApi(key, value, id, link):
+    urls = link + '/api/action/package_show?id=' + value
+    request = req.urlopen(urls)
+    reads = jsn.load(request)
+    results = reads['result'][0]
+    writeMeta(results,id,value)
+
 def writeMeta(data,id,name):
-    post = db['pemdaMetaNew']
+    post = db['pemdaMetaNew1']
     posts = {"id_pemda" : id,
              "crawl_at" :  now,
-             "nama" : name} #TODO: coba ulangi crawling untuk besok!!!
+             "nama" : name}
     temp = {**posts, **data}
     post.insert(temp)
-    # tes = mergePackage()
-    # print(tes['http://data.jakarta.go.id'])
 
 
 
 if __name__ == '__main__':
-    # te = mergePackage()
-    # print(te.values())
-    # for i in listPemda.values():
-    #     print(i)
-    #TODO: Test hasil dari crawling metadata
+    import pprint
     while True:
-        print('Crawler CKAN : \n 1. Lihat list CKAN Pemda \n 2. Ambil Package Pemda \n 3. Ambil Metadata CKAN Pemda')
+        print('Crawler CKAN : \n 1. Lihat list CKAN Pemda \n 2. Ambil Package Pemda \n 2.1. Ambil Package Pemda Tertentu \n 3. Ambil Metadata CKAN Pemda Tertentu \n 4. Ambil Semua Metadata CKAN Pemda')
         pilihan = input('Masukan pilihan : ')
         if pilihan == '1':
-            print('list ckan : \n', listPemda)
+            print('list ckan : ')
+            pprint.pprint(listPemda)
         elif pilihan == '2':
             print('Ambil Package List Pemda  \n')
             for k,v in tqdm(listPemda.items(), desc='Get Package list'):
                 getPackage(v,k)
+
+        elif pilihan == '2.1':
+            pemdapil = input('masukan id : ')
+            for k,v in listPemda.items():
+                if int(pemdapil) == k:
+                    getPackage(v,k)
+
+        elif pilihan == '3':
+            pemdapilihan = input('masukan id : ')
+            tipeckan = input('tipe ckan : ')
+            if tipeckan == 'old':
+                for i,j in listPemda.items():
+                    if int(pemdapilihan) == i:
+                        lispackage = mergePackage()
+                        for k,v in lispackage.items():
+                            for a in tqdm(range(len(v))):
+                                if j == k:
+                                    getMetadataOldApi(k,v[i],i,j)
+            else:
+                for i,j in listPemda.items():
+                    if int(pemdapilihan) == i:
+                        lispackage = mergePackage()
+                        for k,v in lispackage.items():
+                            for a in tqdm(range(len(v))):
+                                if j == k:
+                                    getMetadata(k,v[i],i)
+
         else:
             print("ckan")
             tes = mergePackage()
@@ -106,8 +129,3 @@ if __name__ == '__main__':
 
         print('Crawler Ckan: ', pilihan)
         print('\n ========================================================== \n')
-
-    # tes = mergePackage()
-    # for k,v in tes.items():
-    #     for i in tqdm(range(len(v)), desc='Download Metadata'):
-    #         getMetadata(k,v[i],1)
